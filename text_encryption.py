@@ -8,8 +8,8 @@
 from passlib.context import CryptContext
 
 # CONSTANTS
-DECRYPT_ROUNDS = 294611
-SALT_SIZE = 32
+DECRYPT_ROUNDS = 294611  # Number of rounds of encryption most closely linked to 0.35 seconds (noted user tolerance)
+SALT_SIZE = 32  # Size of random salt to be added
 
 # Globals
 

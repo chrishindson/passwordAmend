@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from sqlite3 import Error
 
 # Consts
-DB_PATH = "/home/chrishindson/Documents/Uni/CET331 - python/Assignment/passwordAmend/db/pwd_db.sqlite"
+DB_PATH = 'db/pwd_db.sqlite'
 
 # Globals
 user_credential_list = []
@@ -20,8 +20,8 @@ user_credential_list = []
 
 def sql_connection():
     """
-
-    :return:
+    Open the connection to the SQLite database
+    :return: valid database connection
     """
     try:
         connection = sqlite3.connect(DB_PATH)
@@ -32,8 +32,8 @@ def sql_connection():
 
 def credential_retrieval():
     """
-
-    :return:
+    Generate the SQL required for user credential retrieval history
+    :return: SQL string to join user_accounts with user_cred_audit for user
     """
     sql_string = "SELECT * FROM " \
                  "(SELECT ua.user_name, uca.user_cred " \
@@ -53,7 +53,7 @@ def credential_update(password, username, expiry_date):
     :param password: updated password for user
     :param username: username for the password update to be applied to
     :param expiry_date: the expiry date of the new password
-    :return:
+    :return: If update is successful True, else False
     """
     try:
         with closing(sql_connection()) as conn:
@@ -85,23 +85,33 @@ def credential_find():
 
 def create_new_user(username, forename, surname, password, expiry_days):
     """
-
+    Creation of a new user within the database, from the details supplied by the user, within the
+    user_details table, with the encrypted password stored in user_credentials
     :param username: username of new user, uniqueness checked prior to creation
     :param forename: forename of new user
     :param surname: surname of new user
     :param password: validity checked password of new user
     :param expiry_days: days before expiration of password, determined by password strength
-    :return: Details of
+    :return: If INSERT successful, True, else False and a message string
     """
     creation_date = datetime.now(tz=None)
     expiry_date = datetime.now(tz=None) + timedelta(days=expiry_days)
     try:
         with closing(sql_connection()) as conn:
             with closing(conn.cursor()) as cursor:
+                """
+                Create new record within user accounts
+                """
                 cursor.execute(
                     "INSERT INTO user_accounts (user_name, forename, surname, created_date) VALUES (?, ?, ?, ?)",
                     (username, forename, surname, creation_date))
+                """
+                gather the user_id generated from the AUTOINCREMENT on user_accounts to link password to user
+                """
                 user_id = cursor.lastrowid
+                """
+                Create a record within user_credentials, storing the password and generated user_id from above
+                """
                 cursor.execute(
                     "INSERT INTO user_credentials (user_id, user_cred, expiry_date, last_updated) VALUES (?, ?, ?, ?);",
                     (user_id, password, expiry_date, creation_date))
@@ -115,7 +125,7 @@ def check_username(username):
     """
     Check if the selected username is available when creating a new user
     :param username: potential new username to be created
-    :return: True if available, False if already in use
+    :return: True if available, False if already in use, and message string about result
     """
     sql_string = "SELECT * FROM user_accounts WHERE user_name = ?; "
     try:

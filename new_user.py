@@ -68,9 +68,6 @@ class NewUser(QWidget):
         self.verify_password_box.keyReleaseEvent = self.verify_password_released
         self.user_box.keyReleaseEvent = self.user_released
 
-        # Set button disabled/enabled
-        self.set_create_button_state()
-
         user_form = QVBoxLayout()
 
         creation_area = QGridLayout()
@@ -99,7 +96,7 @@ class NewUser(QWidget):
         user_form.addStretch(0)
 
         self.clear_down(True)
-        self.set_create_enabled()
+        self.criteria_list()
         self.setLayout(user_form)
         self.setWindowTitle('Create New User')
         self.setGeometry(WIN_LEFT, WIN_TOP, WIN_WIDTH, WIN_HEIGHT)
@@ -107,9 +104,10 @@ class NewUser(QWidget):
 
     def user_released(self, key_pressed):
         """
-
-        :param key_pressed:
-        :return:
+        On keystroke evaluate details supplied
+        Determine if username is available before checking other user input
+        :param key_pressed: key released by user
+        :return: Noe, update form
         """
         global USERNAME_AVAILABLE
         # username_avail = False
@@ -119,47 +117,43 @@ class NewUser(QWidget):
             USERNAME_AVAILABLE, feedback = check_username(username)
         self.user_feedback_label.setText(feedback)
         # USERNAME_AVAILABLE = username_avail
-        self.set_create_enabled()
+        self.criteria_list()
 
     def forename_released(self, key_pressed):
         """
-
-        :param key_pressed:
-        :return:
+        On keystroke evaluate details supplied
+        :param key_pressed: key released by user
+        :return: Noe, update form
         """
-        self.set_create_enabled()
+        self.criteria_list()
 
     def surname_released(self, key_pressed):
         """
-
-        :param key_pressed:
-        :return:
+        On keystroke evaluate details supplied
+        :param key_pressed: key released by user
+        :return: Noe, update form
         """
-        self.set_create_enabled()
+        self.criteria_list()
 
     def password_released(self, key_pressed):
         """
-        Function to judge password input length, prior to passing to password strength calculation function
-        Once strength is returned, update the strength_label to provide feedback to the user
-        Enable/Disable the amend password button if length is below 8 characters
-        :return:
+        On keystroke evaluate details supplied
+        :param key_pressed: key released by user
+        :return: Noe, update form
         """
-        self.set_create_enabled()
         self.criteria_list()
 
     def verify_password_released(self, key_pressed):
         """
-
-        :param key_pressed:
-        :return:
+        On keystroke evaluate details supplied
+        :param key_pressed: key released by user
+        :return: Noe, update form
         """
-        self.set_create_enabled()
-        if self.get_password() != self.get_verify_password():
-            pass
+        self.criteria_list()
 
     def criteria_list(self):
         """
-
+        Verify details of form for validity and provide password feedback to user
         :return:
         """
         username = self.get_username()
@@ -171,9 +165,11 @@ class NewUser(QWidget):
         self.strength_feedback_label.setStyleSheet(f"background-color : {criteria_match['strength']['strength_color']}")
         self._expiry_days = criteria_match['strength']['expiry_days']
 
+        self.set_create_enabled()
+
     def clear_down(self, success):
         """
-
+        Clear down form on close, reset password box only if success is False
         :param success:
         :return:
         """
@@ -206,14 +202,11 @@ class NewUser(QWidget):
         self.clear_down(True)
         self.user_box.setFocus()
 
-    def set_create_button_state(self):
-        if self.get_username() is None or self.get_password() is None:
-            self.create_button.setEnabled(False)
-
     def create_attempt(self):
         """
-
-        :return:
+        Create user within the database
+        :return: None, display message box if success, then close the form
+        if false, clear password fields
         """
         forename = self.get_forename()
         surname = self.get_surname()
@@ -229,24 +222,28 @@ class NewUser(QWidget):
             create_success, response_str = create_new_user(username=username, forename=forename, surname=surname,
                                                            password=encrypt_password(password), expiry_days=expiry_days)
         if create_success:
-            QMessageBox.information(self, "User created", response_str, QMessageBox.Ok,
-                                    QMessageBox.Ok)
+            QMessageBox.information(self, "User created", response_str, QMessageBox.Ok, QMessageBox.Ok)
             self.close()
         else:
             QMessageBox.warning(self, "Trouble creating user", response_str, QMessageBox.Ok, QMessageBox.Ok)
 
     def set_create_enabled(self):
-        if not USERNAME_AVAILABLE:
+        """
+        Set the amend password button to enabled/disabled dependant on if both inputs are greater in length than 0
+        :return: None, Update Create button enabled state
+        """
+        if len(self.get_username()) == 0 or len(self.get_forename()) == 0 or len(self.get_surname()) == 0 or len(
+                self.get_password()) == 0 or len(self.get_verify_password()) == 0:
             self.create_button.setEnabled(False)
-            return
-        if self.get_password() != self.get_verify_password():
+        # Set enabled to False if passwords do not match
+        elif self.get_password() != self.get_verify_password():
             self.create_button.setEnabled(False)
             self.password_match_label.setText('Passwords do not match')
-            return
+        # Set enabled to False is username already exists
+        elif not USERNAME_AVAILABLE:
+            self.create_button.setEnabled(False)
+        # If password is WEAK or VERY WEAK do not allow update attempt
+        elif self.strength_feedback_label.text() == 'VERY WEAK' or self.strength_feedback_label.text() == 'WEAK':
+            self.create_button.setEnabled(False)
         else:
-            self.password_match_label.setText(None)
-        if len(self.get_username()) > 0 and len(self.get_forename()) > 0 and len(self.get_surname()) > 0 and len(
-                self.get_password()) > 0 and len(self.get_verify_password()) > 0:
             self.create_button.setEnabled(True)
-            return
-        self.create_button.setEnabled(False)

@@ -6,7 +6,6 @@
 # Imports
 import re
 from math import log2
-
 from db_access import *
 from text_encryption import verify_encrypted_password, encrypt_password
 
@@ -17,15 +16,18 @@ common_password_list = []
 user_details = []
 VIABLE_PASSWORD = True
 user_credential_list = []
-SPECIAL_SET = 33
-NUMBER_SET = 10
-ALPHA_SET = 26
+SPECIAL_SET = 33  # special characters
+NUMBER_SET = 10  # numbers only
+ALPHA_SET = 26  # alpha characters, used for both upper and lower case instances
+
+# password strength list and characteristics
 strength_list = ({'id': 0, 'strength_desc': '', 'strength_color': '', 'expiry_days': 0},
                  {'id': 1, 'strength_desc': 'VERY WEAK', 'strength_color': '#FF0000', 'expiry_days': 30},
                  {'id': 2, 'strength_desc': 'WEAK', 'strength_color': '#E5E500', 'expiry_days': 60},
                  {'id': 3, 'strength_desc': 'OK', 'strength_color': '#FFA500', 'expiry_days': 90},
                  {'id': 4, 'strength_desc': 'STRONG', 'strength_color': '#008000', 'expiry_days': 180},
                  {'id': 5, 'strength_desc': 'VERY STRONG', 'strength_color': '#00FF00', 'expiry_days': 365})
+# Sequential character lists
 sequences = (
     'abcdefghijklmnopqrstuvwxyz'  # Alphabet
     'qwertyuiopasdfghjklzxcvbnm'  # Keyboard
@@ -38,6 +40,12 @@ sequences = sequences + sequences[::-1]
 
 # Main processing
 def check_common_passwords(password_input):
+    """
+    Check the password supplied by the user against a list of the 1000 most commonly used passwords
+    :param password_input: password candidate
+    :return: If password is found in common list, if exact or contains commonly used phrased,
+    Position within list where 1 = Most common - 1000 Least common (within list only)
+    """
     for common in common_password_list:
         if password_input == common[1]:
             return True, f'Exact Match Common Placement: {common[0]}/{len(common_password_list)}', common[0]
@@ -70,7 +78,6 @@ def sequence_check(password_input):
             # if not found break
             if j == -1:
                 break
-
             # Find the longest common prefix
             common_here = ''
             for a, b in zip(password, sequences[j:]):
@@ -78,7 +85,6 @@ def sequence_check(password_input):
                     break
                 else:
                     common_here += a
-
             # Store the max common found
             common_length = max(common_length, len(common_here))
 
@@ -94,10 +100,10 @@ def sequence_check(password_input):
 
 def user_details_check(username, password):
     """
-    check if username,
-    :param username:
-    :param password:
-    :return:
+    check if username, forename or surname are used within the user password candidate, search is case insensitive
+    :param username: the username being used to amend password, or username of account being created
+    :param password: the password candidate for the user
+    :return: If username, forename or surname appears in the password, True, else False
     """
     for user_detail in user_details:
         if user_detail[0] == username:
@@ -121,9 +127,10 @@ def criteria_check(username, password_input):
         62 uppercase, lowercase and numbers
         95 uppercase, lowercase, numbers and special characters
         brute force measurements  character_set_size^character_count
-    :param username:
-    :param password_input:
-    :return:
+    :param username: username supplied by user for credential update, or user creation
+    :param password_input: potential new password to associate to the account
+    :return: suggested improvement string detailing potential methods to increase password strength,
+            strength :returns the details from strength_list (id, strength_desc, strength_color, expiry_days)
     """
     char_set_val = 0
     entropy = 0
@@ -132,18 +139,31 @@ def criteria_check(username, password_input):
     user_deduction = 0
     password_len = len(password_input)
     improve_str = 'Suggestions for improvement:'
+
+    # Check password for upper case characters
     upper_check = bool(re.match(r'(?=.*[A-Z])', password_input))
+    # Check password for lower case characters
     lower_check = bool(re.match(r'(?=.*[a-z])', password_input))
+    # Check password for numbers
     number_check = bool(re.match(r'(?=.*[0-9])', password_input))
+    # check password for special characters
     special_check = bool(re.match(r'(?=.*[\W])', password_input))
+    # Find repeated characters longer than two repetitions
     repeated_char = bool(re.findall(r'((\w)\2{2,})', password_input))
     length_check = password_len < 8
+    # check the password for sequential characters and the total amount
     sequence_count = sequence_check(password_input.lower())
+    # check password against common password list, and return position in list of 1000
+    # exact match is penalised more heavily
     common_check, common_text, common_position = check_common_passwords(password_input.lower())
+    # determine if the username, forename or surname are used within the password
     user_details_used = user_details_check(username, password_input)
 
+    # Check booleans to suggest potential improvements to the password strength
     if length_check:
         improve_str += '\n * At least 8 characters'
+    elif password_len < 12:
+        improve_str += '\n * Increase password to at least 12 characters'
     if common_check:
         improve_str += f'\n * Try to avoid common passwords ({common_text})'
         if password_len < 12:
@@ -152,8 +172,12 @@ def criteria_check(username, password_input):
         improve_str += f'\n * Do not include username, forename or surname'
         user_deduction = 10
     if repeated_char:
+        # determine the total count of repeated characters within the password
         for match in re.findall(r'((\w)\2{2,})', password_input):
             repeated_count += len(match[0])
+
+    # Add potential characters within password to char_set_val, used to calculate entropy
+    # OR suggest inclusion to improve password strength
     if upper_check:
         char_set_val += ALPHA_SET
     else:
@@ -175,10 +199,13 @@ def criteria_check(username, password_input):
     if repeated_char:
         improve_str += '\n * No more than 2 repeated characters'
     if password_len != 0:
+        # Possible combinations is char_set_val to power of password length
+        # Adapted within this system to account for use of sequential characters, repeated characters and user info
         combinations = char_set_val ** (password_len - (sequence_count + repeated_count + user_deduction))
         overall_entropy = log2(combinations)
         entropy_per_char = log2(char_set_val)
-        calculated_entropy = (password_len - (sequence_count + repeated_count)) * entropy_per_char * (common_deduction * 10)
+        # Calculated entropy used to grade the strength of the password supplied
+        calculated_entropy = (password_len - (sequence_count + repeated_count)) * entropy_per_char
         entropy = {'combinations': combinations,
                    'overall_entropy': overall_entropy,
                    'entropy_per_char': entropy_per_char,
@@ -199,16 +226,15 @@ def determine_strength(entropy):
     Determine the strength of the potential password, using the entropy details and predictability of the password
     Provide a visual guide, through text and colour for the user on key release
     :param entropy:
-    :return: the rating of how secure/how breakable the password supplied is
+    :return: the rating_list information of how secure/how breakable the password supplied is for display to user
     """
     rating = 0
     if entropy != 0:
-        print('CE: ', entropy['calculated_entropy'])
         if entropy['password_len'] < 8 or entropy['calculated_entropy'] < 20:
             rating = 1
-        elif entropy['password_len'] < 12 and entropy['calculated_entropy'] < 40:
+        elif entropy['calculated_entropy'] < 40:  # entropy['password_len'] < 12 and
             rating = 2
-        elif entropy['password_len'] < 16 and entropy['calculated_entropy'] < 60:
+        elif entropy['calculated_entropy'] < 60:  # entropy['password_len'] < 16 and
             rating = 3
         elif entropy['calculated_entropy'] < 100:
             rating = 4
@@ -223,7 +249,7 @@ def database_verify(username, password, expiry_days):
     :param username: username of attempted password amend
     :param password: potential new password
     :param expiry_days: the days until the password expires
-    :return:
+    :return: If password is verified, True, else False
     """
     sql_string = credential_retrieval()
     with closing(sql_connection()) as db:
@@ -243,7 +269,7 @@ def credential_verify(username, password):
     Check that the current password supplied matches the database record before updating to new password
     :param username: username of attempted password amend
     :param password: current password required to authorise the change of password
-    :return:
+    :return: if password can be verified, True, else False
     """
     sql_string = credential_find()
     with closing(sql_connection()) as db:
@@ -255,20 +281,20 @@ def credential_verify(username, password):
     return False
 
 
-def gather_common_password_list():
+def get_common_password_list():
     """
-
-    :return:
+    Gather common password list from database
+    :return: Common password list
     """
     global common_password_list
 
     common_password_list = common_passwords()
 
 
-def gather_user_list():
+def get_user_list():
     """
-
-    :return:
+    Gather list of existing users to verify user information not included in password for current user only (matched)
+    :return: User details list
     """
     global user_details
 
