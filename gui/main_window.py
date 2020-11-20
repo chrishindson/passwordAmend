@@ -8,7 +8,7 @@
 from PyQt5.Qt import QGridLayout, QMessageBox, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit
-from gui.new_user import NewUser
+from .new_user import NewUser
 from engine.password_check import criteria_check, database_verify, credential_verify
 
 # CONSTANTS

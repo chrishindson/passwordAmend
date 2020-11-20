@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QApplication
 from gui.main_window import MainWindow
 from engine.password_check import get_common_password_list, get_user_list
 
+
 # CONSTANTS
 
 
