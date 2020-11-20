@@ -243,7 +243,7 @@ def determine_strength(entropy):
     return strength_list[rating]
 
 
-def database_verify(username, password, expiry_days):
+def credential_update(username, password, expiry_days):
     """
     Check if the password has been used previously
     :param username: username of attempted password amend

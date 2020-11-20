@@ -9,7 +9,7 @@ from PyQt5.Qt import QGridLayout, QMessageBox, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit
 from .new_user import NewUser
-from engine.password_check import criteria_check, database_verify, credential_verify
+from engine.password_check import criteria_check, credential_update, credential_verify
 
 # CONSTANTS
 WIN_LEFT = 200
@@ -144,7 +144,7 @@ class MainWindow(QWidget):
         if not user_correct:  # User password does not match supplier user, or user was not found
             response_str = 'No matching username or password found'
         else:
-            pass_update = database_verify(username=username, password=pass_string, expiry_days=expiry_days)
+            pass_update = credential_update(username=username, password=pass_string, expiry_days=expiry_days)
             if pass_update:
                 response_str = f'Password successfully updated. Your password will expire in {expiry_days} days'
             else:
