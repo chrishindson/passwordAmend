@@ -8,9 +8,9 @@
 from PyQt5 import QtCore
 from PyQt5.Qt import QGridLayout, Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox
-from db_access import create_new_user, check_username
-from password_check import criteria_check
-from text_encryption import encrypt_password
+from engine.db_access import create_new_user, check_username
+from engine.password_check import criteria_check
+from engine.text_encryption import encrypt_password
 
 # CONSTANTS
 WIN_LEFT = 200

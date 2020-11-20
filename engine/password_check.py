@@ -6,8 +6,8 @@
 # Imports
 import re
 from math import log2
-from db_access import *
-from text_encryption import verify_encrypted_password, encrypt_password
+from engine.db_access import *
+from engine.text_encryption import verify_encrypted_password, encrypt_password
 
 # Consts
 

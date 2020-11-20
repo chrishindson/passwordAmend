@@ -32,23 +32,23 @@ create table user_cred_audit
     date_of_change DATETIME                    not null
 );
 insert into user_accounts
-values (1, 'cherry_pick', 'Cherry', 'Pickford', current_timestamp);
+values (1, 'cherry_pick', 'Cherry', 'Pickford', SYSDATE);
 insert into user_accounts
-values (2, 'noname_user', 'Peter', 'Parker', current_timestamp);
+values (2, 'noname_user', 'Peter', 'Parker', SYSDATE);
 insert into user_accounts
-values (3, 'anonimouse', 'Paul', 'Cheeseman', current_timestamp);
+values (3, 'anonimouse', 'Paul', 'Cheeseman', SYSDATE);
 insert into user_credentials
 values (1,
         '$pbkdf2-sha256$294611$JgTgXGtNCYFQSsn5/x9jTEkJodR6b.3d23tPCUHIufc$JqWyVdeARSq.U.Bc304rX3w7CRcmWN07I5rIbuw.OoI',
-        current_timestamp + 90, current_timestamp);
+        SYSDATE + 90, SYSDATE);
 insert into user_credentials
 values (2,
         '$pbkdf2-sha256$294611$JgTgXGtNCYFQSsn5/x9jTEkJodR6b.3d23tPCUHIufc$JqWyVdeARSq.U.Bc304rX3w7CRcmWN07I5rIbuw.OoI',
-        current_timestamp + 90, current_timestamp);
+        SYSDATE + 90, SYSDATE);
 insert into user_credentials
 values (3,
         '$pbkdf2-sha256$294611$JgTgXGtNCYFQSsn5/x9jTEkJodR6b.3d23tPCUHIufc$JqWyVdeARSq.U.Bc304rX3w7CRcmWN07I5rIbuw.OoI',
-        current_timestamp + 90, current_timestamp);
+        SYSDATE + 90, SYSDATE);
 
 
 create trigger password_amend
@@ -56,7 +56,7 @@ create trigger password_amend
     ON user_credentials
 BEGIN
     INSERT INTO user_cred_audit (user_id, user_cred, date_of_change)
-    VALUES (old.user_id, old.user_cred, current_timestamp);
+    VALUES (old.user_id, old.user_cred, SYSDATE);
 END;
 
 -- SELECT *
