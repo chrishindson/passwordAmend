@@ -64,9 +64,13 @@ class NewUser(QWidget):
         self.cancel_button.released.connect(self.clicked_cancel_button)
 
         # Key press procedures
-        self.password_box.keyReleaseEvent = self.password_released
-        self.verify_password_box.keyReleaseEvent = self.verify_password_released
         self.user_box.keyReleaseEvent = self.user_released
+        self.forename_box.keyReleaseEvent = self.key_release
+        self.surname_box.keyReleaseEvent = self.key_release
+        self.password_box.keyReleaseEvent = self.key_release
+        self.verify_password_box.keyReleaseEvent = self.key_release
+
+        self.create_button.keyReleaseEvent = self.key_release
 
         user_form = QVBoxLayout()
 
@@ -135,21 +139,16 @@ class NewUser(QWidget):
         """
         self.criteria_list()
 
-    def password_released(self, key_pressed):
+    def key_release(self, key_pressed):
         """
         On keystroke evaluate details supplied
         :param key_pressed: key released by user
         :return: Noe, update form
         """
         self.criteria_list()
-
-    def verify_password_released(self, key_pressed):
-        """
-        On keystroke evaluate details supplied
-        :param key_pressed: key released by user
-        :return: Noe, update form
-        """
-        self.criteria_list()
+        if key_pressed.key() == Qt.Key_Return or key_pressed.key() == Qt.Key_Enter:
+            if self.create_button.isEnabled():
+                self.create_attempt()
 
     def criteria_list(self):
         """

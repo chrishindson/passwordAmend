@@ -65,6 +65,7 @@ class MainWindow(QWidget):
         # Key press procedures
         self.new_password_box.keyReleaseEvent = self.new_password_released
         self.user_box.keyReleaseEvent = self.user_released
+        self.amend_button.keyReleaseEvent = self.new_password_released
 
         # Set button disabled/enabled
         # self.set_amend_button_state()
