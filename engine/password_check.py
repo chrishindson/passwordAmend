@@ -23,8 +23,8 @@ ALPHA_SET = 26  # alpha characters, used for both upper and lower case instances
 # password strength list and characteristics
 strength_list = ({'id': 0, 'strength_desc': '', 'strength_color': '', 'expiry_days': 0},
                  {'id': 1, 'strength_desc': 'VERY WEAK', 'strength_color': '#FF0000', 'expiry_days': 30},
-                 {'id': 2, 'strength_desc': 'WEAK', 'strength_color': '#E5E500', 'expiry_days': 60},
-                 {'id': 3, 'strength_desc': 'OK', 'strength_color': '#FFA500', 'expiry_days': 90},
+                 {'id': 2, 'strength_desc': 'WEAK', 'strength_color': '#FFA500', 'expiry_days': 60},
+                 {'id': 3, 'strength_desc': 'OK', 'strength_color': '#E5E500', 'expiry_days': 90},
                  {'id': 4, 'strength_desc': 'STRONG', 'strength_color': '#008000', 'expiry_days': 180},
                  {'id': 5, 'strength_desc': 'VERY STRONG', 'strength_color': '#00FF00', 'expiry_days': 365})
 # Sequential character lists
