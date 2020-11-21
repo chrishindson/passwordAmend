@@ -7,7 +7,7 @@
 import re
 from math import log2
 from .db_access import *
-from .text_encryption import verify_encrypted_password, encrypt_password
+from .text_hashing import verify_hashed_password, hash_password
 
 # Consts
 
@@ -198,6 +198,7 @@ def criteria_check(username, password_input):
         improve_str += '\n * No more than 2 sequential characters'
     if repeated_char:
         improve_str += '\n * No more than 2 repeated characters'
+
     if password_len != 0:
         # Possible combinations is char_set_val to power of password length
         # Adapted within this system to account for use of sequential characters, repeated characters and user info
@@ -232,9 +233,9 @@ def determine_strength(entropy):
     if entropy != 0:
         if entropy['password_len'] < 8 or entropy['calculated_entropy'] < 20:
             rating = 1
-        elif entropy['calculated_entropy'] < 40:  # entropy['password_len'] < 12 and
+        elif entropy['calculated_entropy'] < 40:
             rating = 2
-        elif entropy['calculated_entropy'] < 60:  # entropy['password_len'] < 16 and
+        elif entropy['calculated_entropy'] < 60:
             rating = 3
         elif entropy['calculated_entropy'] < 100:
             rating = 4
@@ -243,7 +244,7 @@ def determine_strength(entropy):
     return strength_list[rating]
 
 
-def credential_update(username, password, expiry_days):
+def credential_amend(username, password, expiry_days):
     """
     Check if the password has been used previously
     :param username: username of attempted password amend
@@ -257,10 +258,10 @@ def credential_update(username, password, expiry_days):
             user_credentials = cursor.execute(sql_string, (username,))
             expiry_date = datetime.now(tz=None) + timedelta(days=expiry_days)
             for user_cred in user_credentials:
-                if verify_encrypted_password(password, user_cred[1]):
+                if verify_hashed_password(password, user_cred[1]):
                     return False
-    encrypted_password = encrypt_password(password)
-    user_update = credential_update(encrypted_password, username, expiry_date)
+    hashed_password = hash_password(password)
+    user_update = credential_update(hashed_password, username, expiry_date)
     return user_update
 
 
@@ -276,7 +277,7 @@ def credential_verify(username, password):
         with closing(db.cursor()) as cursor:
             user_credentials = cursor.execute(sql_string, (username,))
             for user_cred in user_credentials:
-                if verify_encrypted_password(password, user_cred[1]):
+                if verify_hashed_password(password, user_cred[1]):
                     return True
     return False
 

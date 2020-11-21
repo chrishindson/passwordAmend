@@ -31,26 +31,9 @@ create table user_cred_audit
     user_cred      varchar(255)                not null,
     date_of_change DATETIME                    not null
 );
-insert into user_accounts
-values (1, 'cherry_pick', 'Cherry', 'Pickford', SYSDATE);
-insert into user_accounts
-values (2, 'noname_user', 'Peter', 'Parker', SYSDATE);
-insert into user_accounts
-values (3, 'anonimouse', 'Paul', 'Cheeseman', SYSDATE);
-insert into user_credentials
-values (1,
-        '$pbkdf2-sha256$294611$JgTgXGtNCYFQSsn5/x9jTEkJodR6b.3d23tPCUHIufc$JqWyVdeARSq.U.Bc304rX3w7CRcmWN07I5rIbuw.OoI',
-        SYSDATE + 90, SYSDATE);
-insert into user_credentials
-values (2,
-        '$pbkdf2-sha256$294611$JgTgXGtNCYFQSsn5/x9jTEkJodR6b.3d23tPCUHIufc$JqWyVdeARSq.U.Bc304rX3w7CRcmWN07I5rIbuw.OoI',
-        SYSDATE + 90, SYSDATE);
-insert into user_credentials
-values (3,
-        '$pbkdf2-sha256$294611$JgTgXGtNCYFQSsn5/x9jTEkJodR6b.3d23tPCUHIufc$JqWyVdeARSq.U.Bc304rX3w7CRcmWN07I5rIbuw.OoI',
-        SYSDATE + 90, SYSDATE);
-
-
+-- CREATE TRIGGER TO APPEND REPLACED PASSWORD TO AUDIT TABLE
+-- USED TO COMPARE PASSWORD CANDIDATE TO PREVIOUSLY USED PASSWORDS
+-- AND REJECT IF PREVIOUSLY USED
 create trigger password_amend
     AFTER UPDATE
     ON user_credentials
@@ -59,20 +42,6 @@ BEGIN
     VALUES (old.user_id, old.user_cred, SYSDATE);
 END;
 
--- SELECT *
--- FROM (SELECT ua.user_name, uca.user_cred
---       FROM user_accounts ua
---                JOIN user_cred_audit uca ON ua.user_id = uca.user_id
---       UNION ALL
---       SELECT u.user_name, uc.user_cred
---       FROM user_accounts u
---                JOIN user_credentials uc ON u.user_id = uc.user_id) a
--- WHERE a.user_name = 'cherry_pick';
---
--- SELECT *
--- FROM user_accounts ua
--- LEFT JOIN user_credentials uc on ua.user_id = uc.user_id
--- WHERE user_name = 'cherry_pick' AND user_cred = 'Pass';
 INSERT INTO common_passwords VALUES
 (1,"123456"),
 (2,"password"),

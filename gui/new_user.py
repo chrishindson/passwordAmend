@@ -9,8 +9,8 @@ from PyQt5 import QtCore
 from PyQt5.Qt import QGridLayout, Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QMessageBox
 from engine.db_access import create_new_user, check_username
-from engine.password_check import criteria_check
-from engine.text_encryption import encrypt_password
+from engine.password_check import criteria_check, get_user_list
+from engine.text_hashing import hash_password
 
 # CONSTANTS
 WIN_LEFT = 200
@@ -219,9 +219,10 @@ class NewUser(QWidget):
             response_str = "Passwords do not match"
         else:
             create_success, response_str = create_new_user(username=username, forename=forename, surname=surname,
-                                                           password=encrypt_password(password), expiry_days=expiry_days)
+                                                           password=hash_password(password), expiry_days=expiry_days)
         if create_success:
             QMessageBox.information(self, "User created", response_str, QMessageBox.Ok, QMessageBox.Ok)
+            get_user_list()
             self.close()
         else:
             QMessageBox.warning(self, "Trouble creating user", response_str, QMessageBox.Ok, QMessageBox.Ok)

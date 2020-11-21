@@ -9,7 +9,7 @@ from PyQt5.Qt import QGridLayout, QMessageBox, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit
 from .new_user import NewUser
-from engine.password_check import criteria_check, credential_update, credential_verify
+from engine.password_check import criteria_check, credential_amend, credential_verify
 
 # CONSTANTS
 WIN_LEFT = 200
@@ -26,6 +26,8 @@ WIN_HEIGHT = 400
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
+        # set default expiry days for password, will be updated on keystroke on new password
+        self._expiry_days = 30
         self.init_ui()
 
     def init_ui(self):
@@ -46,13 +48,14 @@ class MainWindow(QWidget):
 
         # Create Buttons
         self.amend_button = QPushButton('Amend Password')
-        self.cancel_button = QPushButton('Cancel')
+        self.cancel_button = QPushButton('Exit')
         self.signup_button = QPushButton('Create')
 
         # Create Input boxes
         self.user_box = QLineEdit()
         self.current_password_box = QLineEdit()
         self.new_password_box = QLineEdit()
+
         # Set Line Edit to Password, so that obfuscation occurs
         self.current_password_box.setEchoMode(QLineEdit.Password)
         self.new_password_box.setEchoMode(QLineEdit.Password)
@@ -66,12 +69,6 @@ class MainWindow(QWidget):
         self.new_password_box.keyReleaseEvent = self.new_password_released
         self.user_box.keyReleaseEvent = self.user_released
         self.amend_button.keyReleaseEvent = self.new_password_released
-
-        # Set button disabled/enabled
-        # self.set_amend_button_state()
-
-        # set default expiry days for password, will be updated on keystroke on new password
-        self._expiry_days = 30
 
         # Overall Form Layout
         user_form = QVBoxLayout()
@@ -144,7 +141,7 @@ class MainWindow(QWidget):
         if not user_correct:  # User password does not match supplier user, or user was not found
             response_str = 'No matching username or password found'
         else:
-            pass_update = credential_update(username=username, password=pass_string, expiry_days=expiry_days)
+            pass_update = credential_amend(username=username, password=pass_string, expiry_days=expiry_days)
             if pass_update:
                 response_str = f'Password successfully updated. Your password will expire in {expiry_days} days'
             else:
