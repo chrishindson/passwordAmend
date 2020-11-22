@@ -117,7 +117,10 @@ class NewUser(QWidget):
         # username_avail = False
         username = self.get_username()
         feedback = 'Username must be at least 5 characters'
-        if len(username) >= 5:
+        if ' ' in username:
+            USERNAME_AVAILABLE = False
+            feedback = 'Username cannot contain spaces'
+        elif len(username) >= 5:
             USERNAME_AVAILABLE, feedback = check_username(username)
         self.user_feedback_label.setText(feedback)
         # USERNAME_AVAILABLE = username_avail
@@ -232,6 +235,7 @@ class NewUser(QWidget):
         Set the amend password button to enabled/disabled dependant on if both inputs are greater in length than 0
         :return: None, Update Create button enabled state
         """
+        self.password_match_label.setText(None)
         if len(self.get_username()) == 0 or len(self.get_forename()) == 0 or len(self.get_surname()) == 0 or len(
                 self.get_password()) == 0 or len(self.get_verify_password()) == 0:
             self.create_button.setEnabled(False)

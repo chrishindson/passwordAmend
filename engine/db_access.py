@@ -36,9 +36,11 @@ def credential_retrieval():
     :return: SQL string to join user_accounts with user_cred_audit for user
     """
     sql_string = "SELECT * FROM " \
-                 "(SELECT ua.user_name, uca.user_cred " \
+                 "(SELECT * FROM (SELECT ua.user_name, uca.user_cred " \
                  "FROM user_accounts ua " \
                  "JOIN user_cred_audit uca ON ua.user_id = uca.user_id " \
+                 "WHERE uca.date_of_change > ? " \
+                 "ORDER BY uca.date_of_change desc LIMIT 10)" \
                  "UNION ALL " \
                  "SELECT u.user_name, uc.user_cred " \
                  "FROM user_accounts u " \

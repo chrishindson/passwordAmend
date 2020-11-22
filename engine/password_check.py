@@ -253,13 +253,18 @@ def credential_amend(username, password, expiry_days):
     :return: If password is verified, True, else False
     """
     sql_string = credential_retrieval()
+    expiration_date = datetime.now(tz=None) - timedelta(days=365)
     with closing(sql_connection()) as db:
         with closing(db.cursor()) as cursor:
-            user_credentials = cursor.execute(sql_string, (username,))
-            expiry_date = datetime.now(tz=None) + timedelta(days=expiry_days)
-            for user_cred in user_credentials:
-                if verify_hashed_password(password, user_cred[1]):
-                    return False
+            try:
+                user_credentials = cursor.execute(sql_string, (expiration_date, username))
+                expiry_date = datetime.now(tz=None) + timedelta(days=expiry_days)
+                for user_cred in user_credentials:
+                    if verify_hashed_password(password, user_cred[1]):
+                        return False
+            except Error:
+                print(Error.mro())
+                return False
     hashed_password = hash_password(password)
     user_update = credential_update(hashed_password, username, expiry_date)
     return user_update
@@ -275,7 +280,7 @@ def credential_verify(username, password):
     sql_string = credential_find()
     with closing(sql_connection()) as db:
         with closing(db.cursor()) as cursor:
-            user_credentials = cursor.execute(sql_string, (username,))
+            user_credentials = cursor.execute(sql_string, (username, ))
             for user_cred in user_credentials:
                 if verify_hashed_password(password, user_cred[1]):
                     return True

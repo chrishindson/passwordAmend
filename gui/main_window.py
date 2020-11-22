@@ -131,17 +131,17 @@ class MainWindow(QWidget):
         :return:
         """
         pass_update = False
-        current_pass = self.get_current_password_value()
-        pass_string = self.get_new_password_value()
+        current_password = self.get_current_password_value()
+        new_password = self.get_new_password_value()
         username = self.get_username_value()
         expiry_days = self._expiry_days
         # Validate existing credentials function
-        user_correct = credential_verify(username=username, password=current_pass)
+        user_correct = credential_verify(username=username, password=current_password)
 
         if not user_correct:  # User password does not match supplier user, or user was not found
             response_str = 'No matching username or password found'
         else:
-            pass_update = credential_amend(username=username, password=pass_string, expiry_days=expiry_days)
+            pass_update = credential_amend(username=username, password=new_password, expiry_days=expiry_days)
             if pass_update:
                 response_str = f'Password successfully updated. Your password will expire in {expiry_days} days'
             else:
